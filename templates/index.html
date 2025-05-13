@@ -1,12 +1,209 @@
-
 <!DOCTYPE html>
-<html>
-<head><title>Journal Entry</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Diary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f7fa;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+        .left-panel, .right-panel {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .left-panel {
+            flex: 2;
+            background-color: #ffffff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .right-panel {
+            flex: 1;
+            background-color: #f0f2f5;
+        }
+        .select-positive {
+    border: 2px solid #4caf50;
+    background-color: #e8f5e9;
+    }
+    .select-neutral {
+    border: 2px solid #ff9800;
+    background-color: #fff8e1;
+    }
+    .select-negative {
+    border: 2px solid #f44336;
+    background-color: #ffebee;
+    }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #9eb9db;
+            cursor: not-allowed;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background-color: #ffffff;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .entry-meta {
+            font-size: 14px;
+            color: #666;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: #f0f2f5;
+            font-size: 16px;
+        }
+        .task-form {
+            display: inline;
+        }
+    </style>
+</head>
 <body>
-    <h2>Enter Your Journal</h2>
-    <form method="post">
-        <textarea name="journal" rows="10" cols="50" placeholder="How was your day?"></textarea><br>
+
+<div class="left-panel">
+    <h2>Today's Journal</h2>
+    <form id="journalForm">
+        <textarea name="journal" id="journalInput" placeholder="How was your day?" aria-label="Journal Entry"></textarea>
+        <br>
         <button type="submit">Submit</button>
     </form>
+
+    <div id="resultArea" style="margin-top: 20px; display: none;">
+        <h3>Analysis Result</h3>
+        <p><strong>Mood:</strong> <span id="resultMood"></span></p>
+        <p><strong>Productivity:</strong> <span id="resultProductivity"></span></p>
+        <h4>Extracted Tasks:</h4>
+        <ul id="resultTasks"></ul>
+    </div>
+
+    <h3>Pending Tasks</h3>
+    <ul id="tasksList">
+        {% for task in pending_tasks %}
+        <li>
+            {{ task[1] }}
+            <form action="/complete_task/{{ task[0] }}" method="post" class="task-form">
+                <button type="submit">Mark as Done</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="right-panel">
+    <h2>Last 7 Days</h2>
+    <ul id="entriesList">
+    {% for day in entries_by_day %}
+    <li>
+        <strong>{{ day.date }}</strong>
+        <select class="
+            {% if day.avg_mood_score > 0.2 %}
+                select-positive
+            {% elif day.avg_mood_score < -0.2 %}
+                select-negative
+            {% else %}
+                select-neutral
+            {% endif %}
+        ">
+            {% for index, entry in day.entries %}
+                <option>{{ index }}. {{ entry[1] }}</option>
+            {% endfor %}
+        </select>
+    </li>
+    {% endfor %}
+</ul>
+
+</div>
+
+<script>
+    document.getElementById("journalForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const journal = document.getElementById("journalInput").value.trim();
+        if (!journal) return;
+
+        const res = await fetch("/submit_journal_ajax", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ journal })
+        });
+
+        const data = await res.json();
+
+        // Show result
+        document.getElementById("resultMood").innerText = data.mood;
+        document.getElementById("resultProductivity").innerText = data.productivity.toFixed(2);
+        const tasksUl = document.getElementById("resultTasks");
+        tasksUl.innerHTML = "";
+        data.tasks.forEach(task => {
+            const li = document.createElement("li");
+            li.textContent = task;
+            tasksUl.appendChild(li);
+        });
+        document.getElementById("resultArea").style.display = "block";
+
+        // Update journal entries
+        const entriesList = document.getElementById("entriesList");
+        let updated = false;
+        Array.from(entriesList.children).forEach((li) => {
+            const dateLabel = li.querySelector("strong");
+            if (dateLabel && dateLabel.textContent === data.date) {
+                updated = true;
+                const select = li.querySelector("select");
+                const newOption = document.createElement("option");
+                newOption.textContent = `${select.options.length + 1}. ${journal}`;
+                select.appendChild(newOption);
+            }
+        });
+
+        if (!updated) {
+            const newLi = document.createElement("li");
+            newLi.innerHTML = `<strong>${data.date}</strong>
+                <select><option>1. ${journal}</option></select>`;
+            entriesList.prepend(newLi);
+        }
+
+        // Append pending tasks
+        const taskList = document.getElementById("tasksList");
+        data.tasks.forEach(task => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                ${task}
+                <form class="task-form">
+                    <button type="button" disabled>Pending</button>
+                </form>`;
+            taskList.appendChild(li);
+        });
+
+        // Clear input
+        document.getElementById("journalInput").value = "";
+    });
+</script>
 </body>
 </html>
