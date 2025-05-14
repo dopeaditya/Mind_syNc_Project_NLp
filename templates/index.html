@@ -109,9 +109,9 @@
         {% for task in pending_tasks %}
         <li>
             {{ task[1] }}
-            <form action="/complete_task/{{ task[0] }}" method="post" class="task-form">
-                <button type="submit">Mark as Done</button>
-            </form>
+                <form class="task-form" data-task-id="{{ task[0] }}">
+                <button type="button" onclick="markTaskDone(this)">Mark as Done</button>
+                </form>
         </li>
         {% endfor %}
     </ul>
@@ -204,6 +204,21 @@
         // Clear input
         document.getElementById("journalInput").value = "";
     });
+    async function markTaskDone(button) {
+    const form = button.closest("form");
+    const taskId = form.getAttribute("data-task-id");
+
+    const response = await fetch(`/complete_task/${taskId}`, {
+        method: "POST"
+    });
+
+    if (response.ok) {
+        form.parentElement.remove(); // Remove the task from the list
+    } else {
+        alert("Failed to mark task as done.");
+    }
+}
+
 </script>
 </body>
 </html>

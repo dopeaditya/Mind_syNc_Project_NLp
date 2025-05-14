@@ -40,13 +40,18 @@ def init_db():
 def index():
     conn = sqlite3.connect('database/journal.db')
     c = conn.cursor()
+
+    # Fetch journal entries
     c.execute("SELECT date, text, mood, productivity FROM entries ORDER BY date ASC")
     raw_entries = c.fetchall()
-    c.execute("SELECT id, task_text FROM tasks WHERE status = 'pending'")
+
+    # Fetch only pending and not completed tasks
+    c.execute("SELECT id, task_text FROM tasks WHERE status = 'pending' AND completed = 0")
     pending_tasks = c.fetchall()
+
     conn.close()
 
-    # Group by date
+    # Group entries by date
     grouped = defaultdict(list)
     for entry in raw_entries:
         grouped[entry[0]].append(entry)
@@ -72,7 +77,7 @@ def index():
             "entries": numbered_entries
         })
 
-    # Sort latest date at bottom (optional)
+    # Sort by date (latest last)
     entries_by_day.sort(key=lambda x: x["date"])
 
     return render_template("index.html", entries_by_day=entries_by_day, pending_tasks=pending_tasks)
@@ -103,25 +108,25 @@ def submit_journal_ajax():
         "tasks": tasks
     })
 
-@app.route("/dashboard")
-def dashboard():
-    conn = sqlite3.connect('database/journal.db')
-    c = conn.cursor()
-    c.execute("SELECT date, mood, productivity FROM entries ORDER BY date DESC")
-    entries = c.fetchall()
-    c.execute("SELECT id, task_text FROM tasks WHERE status = 'pending'")
-    pending_tasks = c.fetchall()
-    conn.close()
-    return render_template("dashboard.html", entries=entries, pending_tasks=pending_tasks)
+# @app.route("/dashboard")
+# def dashboard():
+#     conn = sqlite3.connect('database/journal.db')
+#     c = conn.cursor()
+#     c.execute("SELECT date, mood, productivity FROM entries ORDER BY date DESC")
+#     entries = c.fetchall()
+#     c.execute("SELECT id, task_text FROM tasks WHERE status = 'pending'")
+#     pending_tasks = c.fetchall()
+#     conn.close()
+#     return render_template("dashboard.html", entries=entries, pending_tasks=pending_tasks)
 
-@app.route("/complete_task/<int:task_id>", methods=["POST"])
+@app.route('/complete_task/<int:task_id>', methods=['POST'])
 def complete_task(task_id):
     conn = sqlite3.connect('database/journal.db')
     c = conn.cursor()
-    c.execute("UPDATE tasks SET status = 'done' WHERE id = ?", (task_id,))
+    c.execute("UPDATE tasks SET completed=1 WHERE id=?", (task_id,))
     conn.commit()
     conn.close()
-    return redirect("/dashboard")
+    return '', 204  # ✅ No Content — good for AJAX requests
 
 if __name__ == "__main__":
     init_db()
