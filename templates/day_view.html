@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Day Journal View</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body { padding: 2rem; background-color: #f8f9fa; }
+    .content-box {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    pre { /* keep journal text readable inside table */
+      white-space: pre-wrap; 
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="content-box">
+    <h4 class="mb-4">📅 Entries for {{ date }}</h4>
+
+    {% if entries %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th style="width:4%">#</th>
+              <th style="width:46%">Journal Content</th>
+              <th style="width:10%">Mood</th>
+              <th style="width:12%">Productivity</th>
+              <th style="width:28%">Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in entries %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><pre>{{ entry.journal_text }}</pre></td>
+              <td>{{ entry.mood }}</td>
+              <td>{{ "%.2f"|format(entry.productivity) }}</td>
+              <td>
+                {% if entry.tasks %}
+                  <ul class="mb-0 ps-3">
+                    {% for task_text, status, completed in entry.tasks %}
+                      <li>
+                        {{ task_text }}
+                        {% if completed %} <span class="text-success">✔</span>{% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  —<!-- em dash when no tasks -->
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">No entries found for this day.</div>
+    {% endif %}
+
+    <a href="/" class="btn btn-secondary mt-3">Back</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

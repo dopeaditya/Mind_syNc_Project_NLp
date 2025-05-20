@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 from nlp.analysis import analyze_text
 from nlp.task_extractor import extract_tasks
-from utils.scorer import productivity_score
+from scorer import custom_productivity_score
 import sqlite3
 from datetime import datetime
 import os
 from collections import defaultdict
+from flask import redirect, url_for
 
 app = Flask(__name__)
 
@@ -127,7 +128,9 @@ def submit_journal_ajax():
     data = request.get_json()
     text = data["journal"]
     analysis = analyze_text(text)
-    prod_score = productivity_score(text)
+
+    # Use your custom productivity calculation here
+    prod_score = custom_productivity_score(text)
 
     conn = sqlite3.connect('database/journal.db')
     c = conn.cursor()
@@ -216,6 +219,61 @@ def chart_data(period):
         "productivity": round(row[1], 2) if row[1] else 0,
         "mood": round(row[2], 2) if row[2] else 0
     } for row in results])
+
+@app.route('/day_view/<date>')
+def day_view(date):
+    conn = sqlite3.connect('database/journal.db')
+    cursor = conn.cursor()
+
+    # Get all entries for the date
+    cursor.execute("SELECT id, text, mood, productivity FROM entries WHERE date = ?", (date,))
+    rows = cursor.fetchall()
+
+    entries = []
+    for row in rows:
+        entry_id, journal_text, mood, productivity = row
+
+        # Get tasks for this entry
+        cursor.execute("SELECT task_text, status, completed FROM tasks WHERE entry_id = ?", (entry_id,))
+        tasks = cursor.fetchall()
+
+        entries.append({
+            'journal_text': journal_text,
+            'mood': mood,
+            'productivity': productivity,
+            'tasks': tasks
+        })
+
+    conn.close()
+
+    return render_template('day_view.html', date=date, entries=entries)
+
+    from flask import request, redirect, url_for, flash
+from flask import request, redirect, url_for
+
+@app.route('/delete_entries', methods=['POST'])
+def delete_entries():
+    # Get list of selected entry IDs from form (can be empty)
+    entry_ids = request.form.getlist('entry_ids')
+    date = request.form.get('date')  # date passed in hidden input
+    
+    if entry_ids:
+        conn = sqlite3.connect('database/journal.db')
+        cursor = conn.cursor()
+        
+        # Use a parameterized query with placeholders for safety
+        query = f"DELETE FROM entries WHERE id IN ({','.join(['?']*len(entry_ids))})"
+        cursor.execute(query, entry_ids)
+        
+        # Also delete associated tasks for deleted entries
+        query_tasks = f"DELETE FROM tasks WHERE entry_id IN ({','.join(['?']*len(entry_ids))})"
+        cursor.execute(query_tasks, entry_ids)
+        
+        conn.commit()
+        conn.close()
+
+    # Redirect back to the day view page of the same date
+    return redirect(url_for('day_view', date=date))
 
 if __name__ == "__main__":
     init_db()

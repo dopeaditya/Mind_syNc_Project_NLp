@@ -43,6 +43,14 @@
     .mood-positive { background-color: green; }
     .mood-neutral { background-color: gray; }
     .mood-negative { background-color: red; }
+
+    .tasks-count {
+    background-color: #7cb2ecd3; /* light blue */
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+  }
+
   </style>
 </head>
 <body>
@@ -86,6 +94,12 @@
             <!-- Weekly Data -->
         <div class="weekly-data">
         <h5>📅 Weekly Overview</h5>
+
+            <div class="mb-3">
+            <label for="datePicker">Select a Date to View:</label>
+            <input type="date" id="datePicker" class="form-control" onchange="goToDayView(this.value)">
+            </div>
+
         <ul class="list-group">
             {% for day in entries_by_day %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -93,10 +107,10 @@
                 <span class="mood-indicator {% if day.avg_mood_score > 0 %}mood-positive{% elif day.avg_mood_score == 0 %}mood-neutral{% else %}mood-negative{% endif %}"></span>
                 {{ day.date }}
                 </span>
-                <span>Tasks: {{ day.entries | length }}</span>
+                <span class="tasks-count">Tasks: {{ day.entries | length }}</span>
 
                 <!-- Dropdown for each day's tasks -->
-                <div class="dropdown">
+                <!-- <div class="dropdown">
                 <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ loop.index }}" data-bs-toggle="dropdown" aria-expanded="false">
                     View Tasks
                 </button>
@@ -109,7 +123,7 @@
                     <li><a class="dropdown-item" href="#">No tasks available.</a></li>
                     {% endif %}
                 </ul>
-                </div>
+                </div> -->
             </li>
             {% endfor %}
         </ul>
@@ -217,6 +231,12 @@
     }
 
     fetchChartData('daily');
+
+  function goToDayView(date) {
+    if(date) {
+      window.location.href = `/day_view/${date}`;
+    }
+  }
   </script>
 </body>
 </html>
