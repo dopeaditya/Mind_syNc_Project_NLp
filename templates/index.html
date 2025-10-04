@@ -2,138 +2,206 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Journal Tracker</title>
+  <title>Mind-Sync Journal</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <!-- Added Bootstrap Icons for the new button -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- Added Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* --- START: New Stylish & Mental Health Friendly Look --- */
+    :root {
+      --bg-color: #f4f7f9;
+      --card-bg-color: #ffffff;
+      --primary-color: #6c63ff;
+      --primary-hover-color: #574fdb;
+      --secondary-color: #f0f2f5;
+      --text-color: #333;
+      --subtle-text-color: #888;
+      --border-color: #e8eaf0;
+      --shadow-color: rgba(108, 99, 255, 0.1);
+      --font-family: 'Inter', sans-serif;
+    }
+
     body {
       padding: 2rem;
-      background-color: #f8f9fa;
+      background-color: var(--bg-color);
+      font-family: var(--font-family);
+      color: var(--text-color);
     }
+
+    .main-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .main-header h1 {
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .main-header p {
+        color: var(--subtle-text-color);
+        font-size: 1.1rem;
+    }
+
     .container {
       display: flex;
       flex-direction: row;
       gap: 2rem;
+      max-width: 1400px; /* Give it a max width for large screens */
     }
+
     .left-column, .right-column {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 2rem;
     }
-    .entry-form, .tasks-section, .weekly-data, .chart-section {
-      background-color: white;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
-    }
-    .tasks-section ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    .tasks-section li {
-      padding: 0.3rem 0;
-    }
-    .weekly-data .mood-indicator {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 5px;
-    }
-    .mood-positive { background-color: green; }
-    .mood-neutral { background-color: gray; }
-    .mood-negative { background-color: red; }
 
-    .tasks-count {
-    background-color: #7cb2ecd3; /* light blue */
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-weight: 600;
-  }
-    /* Style for the new prompt display area */
+    .card-style { /* Replaced the old individual styles */
+      background-color: var(--card-bg-color);
+      padding: 1.5rem;
+      border-radius: 16px; /* Softer, rounded corners */
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 25px -5px var(--shadow-color);
+      transition: transform 0.2s ease-in-out;
+    }
+    
+    .card-style:hover {
+        transform: translateY(-5px);
+    }
+
+    .tasks-section .list-group-item {
+        border-color: var(--border-color); /* Match card border */
+    }
+
+    /* Button Styles */
+    .btn-primary {
+        background-image: linear-gradient(45deg, var(--primary-color) 0%, #8e87ff 100%);
+        border: none;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+        transform: translateY(-2px);
+    }
+    .btn-sm.btn-secondary {
+        background-color: var(--secondary-color);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+    .btn-outline-info {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    .btn-outline-info:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    /* Mood Indicator Styles */
+    .mood-positive { background-color: #28a745; }
+    .mood-neutral { background-color: #adb5bd; }
+    .mood-negative { background-color: #dc3545; }
+
     #prompt-display {
       font-style: italic;
-      border-left: 3px solid #0dcaf0;
+      border-left: 3px solid var(--primary-color);
       padding-left: 10px;
       min-height: 40px;
+      color: var(--subtle-text-color);
     }
+    #message-area {
+      min-height: 24px;
+      transition: opacity 0.3s ease-in-out;
+    }
+    /* --- END: New Stylish & Mental Health Friendly Look --- */
   </style>
 </head>
 <body>
+
+  <!-- Added a main header -->
+  <div class="main-header">
+    <h1>Mind-Sync Journal</h1>
+    <p>Your personal space to reflect, track, and grow.</p>
+  </div>
+
   <div class="container">
     <div class="left-column">
-            <div class="entry-form">
-                <h4>New Journal Entry</h4>
-                <textarea id="journalText" class="form-control" rows="4" placeholder="Write your journal here..."></textarea>
-                
-                <!-- START: Prompt Generator Section -->
-                <div class="d-flex align-items-center mt-2">
-                    <button class="btn btn-primary" onclick="submitJournal()">Submit</button>
-                    <button type="button" class="btn btn-outline-info ms-auto" onclick="getPrompt()">
-                        <i class="bi bi-lightbulb"></i> Get a Prompt
-                    </button>
-                </div>
-                <p id="prompt-display" class="text-muted mt-3"></p>
-                <!-- END: Prompt Generator Section -->
+      <!-- Added .card-style class to all main blocks -->
+      <div class="card-style entry-form">
+        <h4><i class="bi bi-pencil-square"></i> New Journal Entry</h4>
+        <textarea id="journalText" class="form-control" rows="4" placeholder="How was your day?"></textarea>
+        
+        <div id="message-area" class="text-center mt-2"></div>
 
-                <div class="mt-3 border-top pt-3">
-                    <strong>View Insights:</strong>
-                    <a href="/insights/weekly" class="btn btn-sm btn-info">For Past Week</a>
-                    <a href="/insights/monthly" class="btn btn-sm btn-info">For Past Month</a>
-                </div>
-                </div>
+        <div class="d-flex align-items-center mt-2">
+            <button class="btn btn-primary" onclick="submitJournal()">Save Entry</button>
+            <button type="button" class="btn btn-outline-info ms-auto" onclick="getPrompt()">
+                <i class="bi bi-lightbulb"></i> Get a Prompt
+            </button>
+        </div>
+        <p id="prompt-display" class="text-muted mt-3"></p>
+        
+        <div class="mt-3 border-top pt-3">
+            <strong><i class="bi bi-search"></i> View Insights:</strong>
+            <a href="/insights/weekly" class="btn btn-sm btn-secondary">For Past Week</a>
+            <a href="/insights/monthly" class="btn btn-sm btn-secondary">For Past Month</a>
+        </div>
+      </div>
 
-            <div class="tasks-section">
-                <h5>🕒 Pending Tasks</h5>
-                <ul>
-                {% for task in pending_tasks %}
-                    <li>
-                    {{ task[1] }}
-                    <button class="btn btn-sm btn-success float-end" onclick="completeTask({{ task[0] }})">Mark Done</button>
-                    </li>
-                {% else %}
-                    <li>No pending tasks.</li>
-                {% endfor %}
-                </ul>
-
-                <h5 class="mt-4">✅ Completed Tasks</h5>
-                <ul>
-                {% for task in completed_tasks %}
-                    <li>{{ task[0] }} - {{ task[1] }} ({{ task[2] }})</li>
-                {% else %}
-                    <li>No completed tasks.</li>
-                {% endfor %}
-                </ul>
-            </div>
-            </div>
-
-            <div class="right-column">
-            <div class="weekly-data">
-        <h5>📅 Weekly Overview</h5>
-
-            <div class="mb-3">
-            <label for="datePicker">Select a Date to View:</label>
-            <input type="date" id="datePicker" class="form-control" onchange="goToDayView(this.value)">
-            </div>
-
-        <ul class="list-group">
-            {% for day in entries_by_day %}
+      <div class="card-style tasks-section">
+        <h5>🕒 Pending Tasks</h5>
+        <ul class="list-group list-group-flush">
+        {% for task in pending_tasks %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>
-                <span class="mood-indicator {% if day.avg_mood_score > 0 %}mood-positive{% elif day.avg_mood_score == 0 %}mood-neutral{% else %}mood-negative{% endif %}"></span>
-                {{ day.date }}
-                </span>
-                <span class="tasks-count">Tasks: {{ day.entries | length }}</span>
-
-                </li>
-            {% endfor %}
+              <span>{{ task[1] }}</span>
+              <button class="btn btn-sm btn-outline-success" onclick="completeTask({{ task[0] }})">Done</button>
+            </li>
+        {% else %}
+            <li class="list-group-item">No pending tasks. Great job!</li>
+        {% endfor %}
         </ul>
+
+        <h5 class="mt-4">✅ Completed Tasks</h5>
+        <ul class="list-group list-group-flush">
+        {% for task in completed_tasks %}
+            <li class="list-group-item text-muted text-decoration-line-through">
+              {{ task[0] }}
+            </li>
+        {% else %}
+            <li class="list-group-item">No completed tasks yet.</li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="right-column">
+      <div class="card-style weekly-data">
+        <h5>📅 Weekly Overview</h5>
+        <div class="mb-3">
+          <label for="datePicker">Select a Date to View:</label>
+          <input type="date" id="datePicker" class="form-control" onchange="goToDayView(this.value)">
         </div>
 
+        <ul class="list-group">
+          {% for day in entries_by_day %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>
+              <span class="mood-indicator {% if day.avg_mood_score > 0 %}mood-positive{% elif day.avg_mood_score == 0 %}mood-neutral{% else %}mood-negative{% endif %}"></span>
+              {{ day.date }}
+              </span>
+              <span class="tasks-count">Entries: {{ day.entries | length }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
 
-      <div class="chart-section mt-3">
+      <div class="card-style chart-section mt-3">
         <h5>📈 Mood & Productivity Trends</h5>
         <div class="d-flex justify-content-between align-items-center mb-3">
           <label for="chartPeriod" class="form-label">Select Time Period</label>
@@ -149,16 +217,24 @@
   </div>
 
   <script>
+    // --- JavaScript functionality remains the same ---
+    const messageArea = document.getElementById('message-area');
+
+    function showMessage(text, isError = false) {
+        messageArea.textContent = text;
+        messageArea.className = isError ? 'alert alert-danger p-2' : 'alert alert-success p-2';
+        setTimeout(() => {
+            messageArea.textContent = '';
+            messageArea.className = '';
+        }, 3000);
+    }
+    
     function getPrompt() {
         const promptDisplay = document.getElementById('prompt-display');
         promptDisplay.innerText = "Generating a personal prompt...";
-
-        // --- START OF FIX ---
-        // We add a unique timestamp to the URL to prevent the browser from caching the result.
         const url = `/api/get_prompt?cache_bust=${new Date().getTime()}`;
         
-        fetch(url) // Use the new URL with the timestamp
-        // --- END OF FIX ---
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 promptDisplay.innerText = data.prompt;
@@ -171,23 +247,27 @@
 
     function submitJournal() {
       const text = document.getElementById("journalText").value.trim();
-      if (!text) return alert("Please write something!");
+      if (!text) {
+          showMessage("Please write something in your journal first.", true);
+          return;
+      }
 
       fetch("/submit_journal_ajax", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ journal: text })
       })
-      .then(res => res.json())
+      .then(res => {
+          if (!res.ok) { throw new Error('Network response was not ok'); }
+          return res.json();
+      })
       .then(data => {
-        alert("Entry saved! Mood: " + data.mood + ", Productivity: " + data.productivity);
-        location.reload();
+        showMessage("Entry saved successfully!");
+        setTimeout(() => location.reload(), 1000);
       })
       .catch(err => {
         console.error(err);
-        alert("Error saving entry.");
+        showMessage("Error saving entry. Please try again.", true);
       });
     }
 
@@ -196,10 +276,15 @@
         method: "POST"
       }).then(() => location.reload());
     }
+
+    function goToDayView(date) {
+        if(date) {
+            window.location.href = `/day_view/${date}`;
+        }
+    }
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const ctx = document.getElementById('moodProductivityChart').getContext('2d');
@@ -225,36 +310,30 @@
                   data: mood,
                   borderColor: 'rgba(75, 192, 192, 1)',
                   backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                  tension: 0.3
+                  tension: 0.3,
+                  pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                  pointRadius: 4
                 },
                 {
                   label: 'Productivity',
                   data: productivity,
-                  borderColor: 'rgba(255, 159, 64, 1)',
-                  backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                  tension: 0.3
+                  borderColor: 'rgba(108, 99, 255, 1)',
+                  backgroundColor: 'rgba(108, 99, 255, 0.2)',
+                  tension: 0.3,
+                  pointBackgroundColor: 'rgba(108, 99, 255, 1)',
+                  pointRadius: 4
                 }
               ]
             },
             options: {
               responsive: true,
-              scales: {
-                y: {
-                  beginAtZero: true
-                }
-              }
+              scales: { y: { beginAtZero: true } }
             }
           });
         });
     }
 
     fetchChartData('daily');
-
-  function goToDayView(date) {
-    if(date) {
-      window.location.href = `/day_view/${date}`;
-    }
-  }
   </script>
 </body>
 </html>
