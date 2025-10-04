@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Journal Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- Added Bootstrap Icons for the new button -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
     body {
       padding: 2rem;
@@ -50,21 +52,39 @@
     border-radius: 0.25rem;
     font-weight: 600;
   }
-
+    /* Style for the new prompt display area */
+    #prompt-display {
+      font-style: italic;
+      border-left: 3px solid #0dcaf0;
+      padding-left: 10px;
+      min-height: 40px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Left Column -->
-            <div class="left-column">
-            <!-- Journal Entry Form -->
+    <div class="left-column">
             <div class="entry-form">
                 <h4>New Journal Entry</h4>
                 <textarea id="journalText" class="form-control" rows="4" placeholder="Write your journal here..."></textarea>
-                <button class="btn btn-primary mt-2" onclick="submitJournal()">Submit</button>
-            </div>
+                
+                <!-- START: Prompt Generator Section -->
+                <div class="d-flex align-items-center mt-2">
+                    <button class="btn btn-primary" onclick="submitJournal()">Submit</button>
+                    <button type="button" class="btn btn-outline-info ms-auto" onclick="getPrompt()">
+                        <i class="bi bi-lightbulb"></i> Get a Prompt
+                    </button>
+                </div>
+                <p id="prompt-display" class="text-muted mt-3"></p>
+                <!-- END: Prompt Generator Section -->
 
-            <!-- Tasks Section -->
+                <div class="mt-3 border-top pt-3">
+                    <strong>View Insights:</strong>
+                    <a href="/insights/weekly" class="btn btn-sm btn-info">For Past Week</a>
+                    <a href="/insights/monthly" class="btn btn-sm btn-info">For Past Month</a>
+                </div>
+                </div>
+
             <div class="tasks-section">
                 <h5>🕒 Pending Tasks</h5>
                 <ul>
@@ -89,10 +109,8 @@
             </div>
             </div>
 
-            <!-- Right Column -->
             <div class="right-column">
-            <!-- Weekly Data -->
-        <div class="weekly-data">
+            <div class="weekly-data">
         <h5>📅 Weekly Overview</h5>
 
             <div class="mb-3">
@@ -109,31 +127,14 @@
                 </span>
                 <span class="tasks-count">Tasks: {{ day.entries | length }}</span>
 
-                <!-- Dropdown for each day's tasks -->
-                <!-- <div class="dropdown">
-                <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ loop.index }}" data-bs-toggle="dropdown" aria-expanded="false">
-                    View Tasks
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ loop.index }}">
-                    {% if day.tasks_for_day %}
-                    {% for task in day.tasks_for_day %}
-                        <li><a class="dropdown-item" href="#">{{ task.tasks | join(', ') }}</a></li>
-                    {% endfor %}
-                    {% else %}
-                    <li><a class="dropdown-item" href="#">No tasks available.</a></li>
-                    {% endif %}
-                </ul>
-                </div> -->
-            </li>
+                </li>
             {% endfor %}
         </ul>
         </div>
 
 
-      <!-- Chart Section -->
       <div class="chart-section mt-3">
         <h5>📈 Mood & Productivity Trends</h5>
-        <!-- Dropdown for selecting time period now placed just above the chart -->
         <div class="d-flex justify-content-between align-items-center mb-3">
           <label for="chartPeriod" class="form-label">Select Time Period</label>
           <select id="chartPeriod" class="form-select w-auto" onchange="fetchChartData(this.value)">
@@ -147,8 +148,26 @@
     </div>
   </div>
 
-  <!-- JavaScript -->
   <script>
+    // --- START: New Prompt Generator Function ---
+    function getPrompt() {
+        const promptDisplay = document.getElementById('prompt-display');
+        promptDisplay.innerText = "Generating a personal prompt..."; // Loading state
+
+        fetch('/api/get_prompt')
+            .then(res => res.json())
+            .then(data => {
+                promptDisplay.innerText = data.prompt;
+                // The lines that automatically added the prompt to the text area have been removed.
+                // Now, the prompt is only for display and will not be submitted.
+            })
+            .catch(err => {
+                console.error(err);
+                promptDisplay.innerText = "Could not fetch a prompt. Please try again.";
+            });
+    }
+    // --- END: New Prompt Generator Function ---
+
     function submitJournal() {
       const text = document.getElementById("journalText").value.trim();
       if (!text) return alert("Please write something!");
@@ -178,10 +197,8 @@
     }
   </script>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const ctx = document.getElementById('moodProductivityChart').getContext('2d');
@@ -240,3 +257,4 @@
   </script>
 </body>
 </html>
+

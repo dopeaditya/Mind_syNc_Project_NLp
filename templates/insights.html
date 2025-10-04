@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Personal Insights</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body { padding: 2rem; background-color: #f8f9fa; }
+    .content-box {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card { margin-bottom: 1.5rem; }
+    .card-header { font-size: 1.25rem; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="content-box">
+    <h4 class="mb-4">💡 Your {{ period.capitalize() }} Insights</h4>
+
+    {% if insights %}
+      <p>We've analyzed your entries from the last {{ period.replace('ly', '') }} to find these patterns:</p>
+      
+      {% for insight in insights %}
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          Topic: {{ insight.topic.capitalize() }}
+        </div>
+        <div class="card-body">
+            <p class="card-text">
+                This topic was mentioned <strong>{{ insight.count }}</strong> times in your journal entries. Here's the breakdown of its impact:
+            </p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-emoji-smile-fill text-success" style="font-size: 1.2rem; vertical-align: middle;"></i>
+                        <span class="ms-2">Average Mood</span>
+                    </div>
+                    
+                    {% if insight.avg_mood > 0.2 %}
+                        <span class="badge bg-success rounded-pill fs-6">{{ "%.2f"|format(insight.avg_mood) }}</span>
+                    {% elif insight.avg_mood < -0.2 %}
+                        <span class="badge bg-danger rounded-pill fs-6">{{ "%.2f"|format(insight.avg_mood) }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill fs-6">{{ "%.2f"|format(insight.avg_mood) }}</span>
+                    {% endif %}
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-graph-up-arrow text-primary" style="font-size: 1.2rem; vertical-align: middle;"></i>
+                        <span class="ms-2">Average Productivity</span>
+                    </div>
+                    <span class="badge bg-primary rounded-pill fs-6">{{ "%.2f"|format(insight.avg_prod) }}</span>
+                </li>
+            </ul>
+        </div>
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="alert alert-info">Not enough repeated topics found for this period to generate insights. Keep journaling!</div>
+    {% endif %}
+
+    <a href="/" class="btn btn-secondary mt-3">Back to Dashboard</a>
+  </div>
+</body>
+</html>

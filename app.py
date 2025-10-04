@@ -7,6 +7,8 @@ from datetime import datetime
 import os
 from collections import defaultdict
 from flask import redirect, url_for
+from insights import generate_insights
+from prompts import generate_prompt
 
 app = Flask(__name__)
 
@@ -274,6 +276,31 @@ def delete_entries():
 
     # Redirect back to the day view page of the same date
     return redirect(url_for('day_view', date=date))
+
+# In app.py
+
+# This route will redirect to the weekly insights by default
+@app.route('/insights')
+def insights_redirect():
+    return redirect(url_for('insights_page', period='weekly'))
+
+
+@app.route('/insights/<period>')
+def insights_page(period):
+    # Check for valid periods to be safe
+    if period not in ['weekly', 'monthly', 'all']:
+        return "Invalid period selected.", 404
+
+    # Pass the period from the URL to our upgraded function
+    insights_list = generate_insights(period=period)
+    
+    # Also pass the period to the template so we can display it in the title
+    return render_template('insights.html', insights=insights_list, period=period)
+
+@app.route('/api/get_prompt')
+def get_prompt_api():
+    prompt_text = generate_prompt()
+    return jsonify({'prompt': prompt_text})
 
 if __name__ == "__main__":
     init_db()

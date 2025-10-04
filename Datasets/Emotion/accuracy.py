@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import time
 
 # Load data
-df = pd.read_csv('test_converted.csv')
+df = pd.read_csv('Datasets/Emotion/test_converted.csv')
 
 texts = df['text'].tolist()
 labels = df['mood'].tolist()
