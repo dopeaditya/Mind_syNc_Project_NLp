@@ -149,24 +149,25 @@
   </div>
 
   <script>
-    // --- START: New Prompt Generator Function ---
     function getPrompt() {
         const promptDisplay = document.getElementById('prompt-display');
-        promptDisplay.innerText = "Generating a personal prompt..."; // Loading state
+        promptDisplay.innerText = "Generating a personal prompt...";
 
-        fetch('/api/get_prompt')
+        // --- START OF FIX ---
+        // We add a unique timestamp to the URL to prevent the browser from caching the result.
+        const url = `/api/get_prompt?cache_bust=${new Date().getTime()}`;
+        
+        fetch(url) // Use the new URL with the timestamp
+        // --- END OF FIX ---
             .then(res => res.json())
             .then(data => {
                 promptDisplay.innerText = data.prompt;
-                // The lines that automatically added the prompt to the text area have been removed.
-                // Now, the prompt is only for display and will not be submitted.
             })
             .catch(err => {
                 console.error(err);
                 promptDisplay.innerText = "Could not fetch a prompt. Please try again.";
             });
     }
-    // --- END: New Prompt Generator Function ---
 
     function submitJournal() {
       const text = document.getElementById("journalText").value.trim();
