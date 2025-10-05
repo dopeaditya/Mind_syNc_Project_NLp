@@ -5,12 +5,10 @@
   <title>Mind-Sync Journal</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <!-- Added Google Font: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* --- START: New Stylish & Mental Health Friendly Look --- */
     :root {
       --bg-color: #f4f7f9;
       --card-bg-color: #ffffff;
@@ -23,61 +21,58 @@
       --shadow-color: rgba(108, 99, 255, 0.1);
       --font-family: 'Inter', sans-serif;
     }
-
     body {
       padding: 2rem;
       background-color: var(--bg-color);
       font-family: var(--font-family);
       color: var(--text-color);
     }
-
     .main-header {
         text-align: center;
         margin-bottom: 2.5rem;
     }
-
     .main-header h1 {
         font-weight: 700;
         color: var(--primary-color);
     }
-
     .main-header p {
         color: var(--subtle-text-color);
         font-size: 1.1rem;
     }
-
     .container {
       display: flex;
       flex-direction: row;
       gap: 2rem;
-      max-width: 1400px; /* Give it a max width for large screens */
+      max-width: 1400px;
     }
-
     .left-column, .right-column {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 2rem;
     }
-
-    .card-style { /* Replaced the old individual styles */
+    .card-style {
       background-color: var(--card-bg-color);
       padding: 1.5rem;
-      border-radius: 16px; /* Softer, rounded corners */
+      border-radius: 16px;
       border: 1px solid var(--border-color);
       box-shadow: 0 10px 25px -5px var(--shadow-color);
       transition: transform 0.2s ease-in-out;
     }
-    
     .card-style:hover {
         transform: translateY(-5px);
     }
-
     .tasks-section .list-group-item {
-        border-color: var(--border-color); /* Match card border */
+        border-color: var(--border-color);
     }
-
-    /* Button Styles */
+    /* --- START: Updated style for pending task visibility --- */
+    .pending-task-item {
+        border-top: 1px solid #adb5bd !important; /* A much darker gray for more visibility */
+    }
+    .pending-task-item:first-child {
+        border-top: none !important; /* Remove top border for the first item */
+    }
+    /* --- END: Updated style --- */
     .btn-primary {
         background-image: linear-gradient(45deg, var(--primary-color) 0%, #8e87ff 100%);
         border: none;
@@ -102,12 +97,9 @@
         background-color: var(--primary-color);
         color: white;
     }
-
-    /* Mood Indicator Styles */
     .mood-positive { background-color: #28a745; }
     .mood-neutral { background-color: #adb5bd; }
     .mood-negative { background-color: #dc3545; }
-
     #prompt-display {
       font-style: italic;
       border-left: 3px solid var(--primary-color);
@@ -119,12 +111,10 @@
       min-height: 24px;
       transition: opacity 0.3s ease-in-out;
     }
-    /* --- END: New Stylish & Mental Health Friendly Look --- */
   </style>
 </head>
 <body>
 
-  <!-- Added a main header -->
   <div class="main-header">
     <h1>Mind-Sync Journal</h1>
     <p>Your personal space to reflect, track, and grow.</p>
@@ -132,7 +122,6 @@
 
   <div class="container">
     <div class="left-column">
-      <!-- Added .card-style class to all main blocks -->
       <div class="card-style entry-form">
         <h4><i class="bi bi-pencil-square"></i> New Journal Entry</h4>
         <textarea id="journalText" class="form-control" rows="4" placeholder="How was your day?"></textarea>
@@ -158,7 +147,7 @@
         <h5>🕒 Pending Tasks</h5>
         <ul class="list-group list-group-flush">
         {% for task in pending_tasks %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item d-flex justify-content-between align-items-center pending-task-item">
               <span>{{ task[1] }}</span>
               <button class="btn btn-sm btn-outline-success" onclick="completeTask({{ task[0] }})">Done</button>
             </li>
@@ -170,9 +159,13 @@
         <h5 class="mt-4">✅ Completed Tasks</h5>
         <ul class="list-group list-group-flush">
         {% for task in completed_tasks %}
-            <li class="list-group-item text-muted text-decoration-line-through">
-              {{ task[0] }}
+            <!-- START: Updated completed task style -->
+            <li class="list-group-item d-flex align-items-center text-muted">
+              <i class="bi bi-check-circle-fill text-success me-3 fs-5"></i>
+              <span class="flex-grow-1">{{ task[0] }}</span>
+              <small class="fst-italic">{{ task[1] }}</small>
             </li>
+            <!-- END: Updated completed task style -->
         {% else %}
             <li class="list-group-item">No completed tasks yet.</li>
         {% endfor %}
@@ -217,7 +210,6 @@
   </div>
 
   <script>
-    // --- JavaScript functionality remains the same ---
     const messageArea = document.getElementById('message-area');
 
     function showMessage(text, isError = false) {
@@ -262,8 +254,8 @@
           return res.json();
       })
       .then(data => {
-        showMessage("Entry saved successfully!");
-        setTimeout(() => location.reload(), 1000);
+        alert("Entry saved! Mood: " + data.mood + ", Productivity: " + data.productivity);
+        location.reload(); 
       })
       .catch(err => {
         console.error(err);
