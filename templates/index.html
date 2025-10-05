@@ -65,14 +65,12 @@
     .tasks-section .list-group-item {
         border-color: var(--border-color);
     }
-    /* --- START: Updated style for pending task visibility --- */
     .pending-task-item {
-        border-top: 1px solid #adb5bd !important; /* A much darker gray for more visibility */
+        border-top: 1px solid #adb5bd !important;
     }
     .pending-task-item:first-child {
-        border-top: none !important; /* Remove top border for the first item */
+        border-top: none !important;
     }
-    /* --- END: Updated style --- */
     .btn-primary {
         background-image: linear-gradient(45deg, var(--primary-color) 0%, #8e87ff 100%);
         border: none;
@@ -159,13 +157,11 @@
         <h5 class="mt-4">✅ Completed Tasks</h5>
         <ul class="list-group list-group-flush">
         {% for task in completed_tasks %}
-            <!-- START: Updated completed task style -->
             <li class="list-group-item d-flex align-items-center text-muted">
               <i class="bi bi-check-circle-fill text-success me-3 fs-5"></i>
               <span class="flex-grow-1">{{ task[0] }}</span>
               <small class="fst-italic">{{ task[1] }}</small>
             </li>
-            <!-- END: Updated completed task style -->
         {% else %}
             <li class="list-group-item">No completed tasks yet.</li>
         {% endfor %}
@@ -184,11 +180,14 @@
         <ul class="list-group">
           {% for day in entries_by_day %}
           <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>
-              <span class="mood-indicator {% if day.avg_mood_score > 0 %}mood-positive{% elif day.avg_mood_score == 0 %}mood-neutral{% else %}mood-negative{% endif %}"></span>
-              {{ day.date }}
-              </span>
-              <span class="tasks-count">Entries: {{ day.entries | length }}</span>
+              <div class="d-flex align-items-center">
+                <span class="mood-indicator {% if day.avg_mood_score > 0 %}mood-positive{% elif day.avg_mood_score == 0 %}mood-neutral{% else %}mood-negative{% endif %}"></span>
+                <span class="me-3">{{ day.date }}</span>
+                <span class="tasks-count">Entries: {{ day.entries | length }}</span>
+              </div>
+              <!-- START: Added View Tasks Button -->
+              <a href="/day_view/{{ day.date }}" class="btn btn-sm btn-outline-primary">View Tasks</a>
+              <!-- END: Added View Tasks Button -->
           </li>
           {% endfor %}
         </ul>
