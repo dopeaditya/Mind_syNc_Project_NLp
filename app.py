@@ -277,7 +277,11 @@ def delete_entries():
     # Redirect back to the day view page of the same date
     return redirect(url_for('day_view', date=date))
 
-# In app.py
+
+#From here insights and prompt feature code starts
+# insights feature includes insights.py file and insights.html
+# prompt feature includes prompts.py
+
 
 # This route will redirect to the weekly insights by default
 @app.route('/insights')
